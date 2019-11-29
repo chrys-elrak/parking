@@ -1,0 +1,22 @@
+{
+  "name": "level2",
+  "version": "1.0.0",
+  "description": "",
+  "env": "dev",
+  "main": "index.js",
+  "dependencies": {
+    "ejs": "^2.6.1",
+    "ejs-electron": "^2.0.3",
+    "electron": "^2.0.8",
+    "express": "^4.16.3",
+    "lodash": "^4.17.10",
+    "moment": "^2.24.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron index.js"
+  },
+  "author": "Chrys Rakotonimanana",
+  "license": "ISC"
+}

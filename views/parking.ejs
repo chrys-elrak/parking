@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<title>My Parking - © Chrys Rakotonimanana</title>
+		<link href="../assets/mdb/css/bootstrap.min.css" rel="stylesheet">
+		<link href="../assets/mdb/css/mdb.min.css" rel="stylesheet">
+		<link href="../assets/mdb/css/modules/animations-extended.min.css" rel="stylesheet">
+		<link href="../assets/css/index.css" rel="stylesheet">
+	</head>
+	<body style="overflow-y: hidden">
+		<div class="container">
+			<div class="row">
+				<div class="col-4">
+					<button class="btn btn-dark animated bounceInRight" id="changeTheme">Change theme</button>
+					<button class="btn btn-default animated zoomin" id="resetTheme">Reset theme</button>
+					<button class="btn btn-primary animated fadeInDownBig" id="add">Add an entry</button>
+					<button class="btn btn-danger animated zoomInUp" type="button" data-toggle="modal"
+						data-target="#removeModal">One car get out</button>
+					<div class="btn-warning shadow animated zoomInRight">
+						<div class="card-body">
+							<h4 class="card-title">Places</h4>
+							<p class="card-text">
+								<p class="badge badge-danger animated bounceInDown">Occuped : <span
+										id="occuped">26</span></p>
+								<p class="badge badge-success animated bounceInLeft">Free : <span id="free">84</span>
+								</p>
+								<p class="badge badge-info animated bounceInUp">Total : <span id="total">100</span></p>
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-8">
+					<h1 class="text-center">List of cars</h1>
+					<button class="btn btn-danger btn-block" id="clearbtn">Tout enlever</button>
+					<div class="col-12 m-1" style="overflow-y:scroll; max-height: 60%;height:100%;" id="container">
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Modals -->
+		<div class="modal fade" id="removeModal" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Ticket number</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="md-form">
+							<label for="ticket">Ticket</label>
+							<input type="text" name="" id="ticket" class="form-control">
+						</div>
+						<button class="btn btn-block btn-success" data-dismiss="modal" id="validate">Valider</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" id="alert" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modalTitle"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p id="modalMessage"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" id="theme" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modalTitle">Switch theme</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="background">Background Color</label>
+							<input type="color" class="form-control" id="background">
+						</div>
+						<div class="form-group">
+							<label for="background">Text Color</label>
+							<input type="color" class="form-control" id="foreground">
+						</div>
+						<button id="validateTheme" data-dismiss="modal" class="btn btn-success">Validate</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Modals -->
+		<script src="../assets/js/script-begin.js" type="text/javascript"></script>
+		<script src="../assets/mdb/js/jquery-3.3.1.min.js" type="text/javascript"></script>
+		<script src="../assets/mdb/js/bootstrap.min.js" type="text/javascript"></script>
+		<script src="../assets/mdb/js/mdb.min.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			(function () {
+				function updateDOM(data) {
+					if (data.theme.length) {
+						$('body').css({
+							color: data.theme[0],
+							backgroundColor: data.theme[1]
+						})
+						$('#foreground').val(data.theme[0])
+						$('#background').val(data.theme[1])
+					}
+					if (data.cars.length === 0) {
+						$('#clearbtn').hide()
+					}else{
+						$('#clearbtn').show()
+					}
+					// Changing DOMContent
+					$('#container').children().remove()
+					data.cars.reverse().map((v, i, a) => {
+						let template = `
+						<div class="card mt-1 animated zoomInUp hoverable" id="${v.id}">
+							<div class="card-body">
+								<h5 class="card-title">${v.id}</h5>
+								<p class="card-text">${moment(v.entry).fromNow()}</p>
+							</div>
+						</div>
+						`
+						$("#container").append(template)
+					})
+					$('#occuped').text(`${data.cars.length}`)
+					$('#free').text(`${data.max - data.cars.length}`)
+					$('#total').text(`${data.max}`)
+				}
+				function getData() {
+					$.ajax({
+						url: '../parking.json',
+						success: (data) => updateDOM(data),
+						error: (err) => {
+							alert('Une erreur est survenue !')
+							console.log(err)
+						}
+					})
+				}
+				function showAlert(o) {
+					$("#modalTitle").text(o.title)
+					$("#modalMessage").text(o.message)
+					$('#alert').modal({ show: true })
+				}
+				window.onload = getData()
+				$('#changeTheme').on('click', (e) => {
+					$('#theme').modal({ show: true })
+					$('#validateTheme').on('click', (e) => {
+						const theme = [$('#foreground').val(), $('#background').val()]
+						$('body').css({
+							color: theme[0],
+							backgroundColor: theme[1]
+						})
+						ipcr.send('change-theme', theme)
+						getData()
+					})
+				})
+				$('#resetTheme').on('click', (e) => {
+					ipcr.send('change-theme', [])
+					$('body').css({
+							color: '',
+							backgroundColor: ''
+						})
+				})
+				$('#clearbtn').on('click', (e)=> {
+					ipcr.send('clear')
+				})
+				const electron = require('electron')
+				const moment = require('moment')
+				const { ipcRenderer: ipcr } = electron
+				const addBtn = $('#add'), validateBtn = $('#validate')
+				// Adding car
+				$(addBtn).on('click', (e) => {
+					ipcr.send('add')
+				})
+				$(validateBtn).on('click', (e) => {
+					let ticket = parseInt($('#ticket').val())
+					if (isNaN(ticket)) ticket = null
+					ipcr.send('remove', ticket)
+					$('#ticket').val('')
+				})
+				ipcr.on('added', (e, res) => {
+					getData()
+					var message = ''
+					if (res.status === 500) {
+						message = `Parking full, can not add anymore`
+					} else {
+						message = `New car added, ${res.car.id} at ${moment(new Date()).format("DD/M/Y on hh:mm")}`
+					}
+					showAlert({
+						title: "Adding",
+						message
+					})
+				})
+				ipcr.on('removed', (e, res) => {
+					getData()
+					var message = ''
+					if (res.status === 200) {
+						message = `Car removed : ${res.ticket}`
+					} else if (res.status === 404) {
+						message = `Ticket number not exist : ${res.ticket}`
+					} else {
+						message = `Invalid ticket : ${res.ticket === null ? "···" : res.ticket}`
+					}
+					showAlert({
+						title: "Removing",
+						message
+					})
+				})
+				ipcr.on('cleared', (e, res) => {
+					getData()
+					showAlert({
+						title : "Cleared",
+						message : `${res.default}`
+					})
+				})
+
+			})(jQuery)
+		</script>
+		<script src="../assets/js/script-end.js" type="text/javascript"></script>
+	</body>
+</html>
